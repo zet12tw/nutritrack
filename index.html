@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f3f5f7">
+    <link rel="icon" type="image/png" href="img/logo-icona-foresta.png">
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+    <title>NutriTrack</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app" style="display:none">
+        <!-- BARRA SUPERIORE CON MENU A TENDINA UTENTE -->
+        <header class="topbar">
+            <span class="logo">
+                <img class="logo-img" data-logo="icona" src="img/logo-icona-foresta.png" alt="Logo NutriTrack">
+                <span class="logo-nome">Nutri<em>Track</em></span>
+            </span>
+            <div class="dropdown" id="dropdownUtente">
+                <button type="button" class="dropdown-toggle" id="btnUtente" onclick="toggleMenuUtente(event)" aria-haspopup="true" aria-expanded="false">
+                    <span class="avatar" id="avatarUtente">?</span>
+                    <span class="nome-utente" id="nomeUtenteMenu"></span>
+                    <span class="freccia">▾</span>
+                </button>
+                <div class="dropdown-menu" id="menuUtente" style="display:none">
+                    <div class="dropdown-info">
+                        <strong id="menuNome"></strong>
+                        <small id="menuUsername"></small>
+                    </div>
+                    <button type="button" onclick="apriDatiPersonali(false)">✏️ Dati personali</button>
+                    <div class="dropdown-sezione">
+                        <div class="dropdown-titolo">
+                            <span>🎨 Tema</span>
+                            <small id="nomeTema">Foresta</small>
+                        </div>
+                        <div class="temi" id="selettoreTemi"></div>
+                    </div>
+                    <button type="button" class="esci" onclick="logout()">🚪 Esci</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENUTO PRINCIPALE -->
+        <main id="contenuto">
+
+            <!-- HOME -->
+            <section id="home" class="pagina attiva">
+                <h1 id="saluto">Ciao! 👋</h1>
+                <p class="sottotitolo">Ecco il tuo riepilogo</p>
+
+                <div class="card principale" onclick="mostraPagina('dettaglio-kcal')" style="cursor:pointer">
+                    <div>
+                        <p>Kcal di oggi</p>
+                        <h2 id="kcalOggi">0 kcal</h2>
+                        <p id="obiettivoTesto" style="margin:6px 0 0;font-size:13px"></p>
+                    </div>
+
+                    <div class="cerchio">
+                        <span>0%</span>
+                    </div>
+                </div>
+
+                <div class="card scheda-punti" id="schedaPunti">
+                    <div class="punti-testa">
+                        <button type="button" class="streak-fiamma" id="streakFiamma" onclick="toccaStreak()" aria-label="Streak giornaliera">
+                            <span class="fiamma" id="fiammaIcona">🔥</span>
+                            <span>
+                                <strong id="streakNum">0</strong>
+                                <small id="streakTesto">giorni di fila</small>
+                            </span>
+                        </button>
+                        <div class="punti-box">
+                            <strong id="puntiTot">0</strong>
+                            <small>punti</small>
+                        </div>
+                    </div>
+
+                    <div class="livello-riga">
+                        <span id="livelloNome">Livello 1</span>
+                        <span id="livelloPunti">0 / 150</span>
+                    </div>
+                    <div class="barra-livello"><div id="livelloBarra"></div></div>
+
+                    <div class="streak-giorni" id="streakGiorni"></div>
+
+                    <button type="button" class="btn-missioni" onclick="apriMissioni()">
+                        <span>🎯 Missioni di oggi</span>
+                        <strong id="missioniContatore">0/6</strong>
+                    </button>
+                </div>
+
+                <div class="mini-grid">
+                    <div class="mini-card" onclick="apriProgressi('peso')">
+                        <span class="mini-icona">⚖️</span>
+                        <small>Peso</small>
+                        <strong id="homePeso">—</strong>
+                        <em id="homePesoSub"></em>
+                    </div>
+                    <div class="mini-card" onclick="apriProgressi('sonno')">
+                        <span class="mini-icona">😴</span>
+                        <small>Sonno</small>
+                        <strong id="homeSonno">—</strong>
+                        <em id="homeSonnoSub"></em>
+                    </div>
+                </div>
+
+                <div class="cal-testa" style="margin-top:25px;margin-bottom:12px">
+                    <h3 id="titoloSettimana" style="margin:0">Settimana corrente</h3>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <button onclick="cambiaSettimana(-1)">‹</button>
+                        <button id="btnSettimanaAvanti" onclick="cambiaSettimana(1)">›</button>
+                    </div>
+                </div>
+                <p class="sottotitolo" style="margin:-6px 0 12px;font-size:13px" id="sottotitoloSettimana">Tocca un giorno per aprire il calendario</p>
+
+                <div class="grafico" id="graficoKcal">
+                    <!-- Il grafico viene creato da JavaScript -->
+                </div>
+
+                <h3>Allenamenti recenti</h3>
+
+                <div id="allenamentiHome">
+                    <p class="vuoto">Nessun allenamento registrato.</p>
+                </div>
+            </section>
+
+            <!-- DETTAGLIO KCAL E MACRONUTRIENTI -->
+            <section id="dettaglio-kcal" class="pagina">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px">
+                    <button class="btn-indietro" onclick="mostraPagina('home')">‹ Indietro</button>
+                    <h1 style="margin:0;font-size:24px">Dettaglio Giornaliero</h1>
+                </div>
+
+                <div class="card form-card">
+                    <h3>Obiettivo Calorico</h3>
+                    <p class="obiettivo-kcal"><strong id="obiettivoKcalValore">0 kcal</strong> al giorno</p>
+                    <p class="nota-obiettivo" id="obiettivoDettaglio"></p>
+                    <p class="nota-obiettivo">Calcolato dai tuoi dati personali (sesso, età, peso e altezza). Per cambiarlo aggiorna i dati personali.</p>
+                    <button type="button" onclick="apriDatiPersonali(false)">Modifica dati personali</button>
+                </div>
+
+                <div class="card scheda-macro">
+                    <div class="schede-tab">
+                        <button type="button" class="tab attivo" id="tabMacro" onclick="mostraTabDettaglio('macro')">Macronutrienti</button>
+                        <button type="button" class="tab" id="tabPasti" onclick="mostraTabDettaglio('pasti')">Pasti</button>
+                    </div>
+
+                    <div id="pannelloMacro">
+                        <div id="barreMacro"></div>
+                        <div class="lista-kcal-pasti" id="listaKcalPasti"></div>
+                    </div>
+
+                    <div id="pannelloPasti" style="display:none">
+                        <div id="riepilogoPastiOggi">
+                            <p class="vuoto">Nessun pasto registrato per oggi.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CRONOLOGIA / DIARIO -->
+            <section id="cronologia" class="pagina">
+                <h1>Diario Giornaliero</h1>
+                <p class="sottotitolo" id="dataDiarioTesto">Oggi</p>
+
+                <div class="card form-card">
+                    <h3>Registra Pasto</h3>
+                    <form id="formPasto" onsubmit="aggiungiPasto(event)">
+                        <label>Pasto</label>
+                        <select id="tipoPasto">
+                            <option value="Colazione">Colazione</option>
+                            <option value="Pranzo">Pranzo</option>
+                            <option value="Cena">Cena</option>
+                            <option value="Spuntino">Spuntino</option>
+                        </select>
+
+                        <label>Alimento</label>
+                        <input type="text" id="cercaAlimento" placeholder="Cerca nel database..." oninput="cercaAlimentiDB()" required autocomplete="off">
+                        <div id="risultatiRicerca" style="background:var(--card);border:1px solid var(--bordo);border-radius:10px;max-height:150px;overflow-y:auto;display:none;margin-top:4px"></div>
+
+                        <label>Quantità (g / ml)</label>
+                        <input type="number" id="quantitaPasto" placeholder="Es. 100" min="1" required oninput="calcolaKcalPasto()">
+
+                        <p id="kcalCalcolate" style="margin-top:10px;font-weight:bold;color:var(--primario);font-size:14px">Calorie stimate: 0 kcal</p>
+
+                        <button type="submit">Aggiungi Pasto</button>
+                    </form>
+                </div>
+
+                <h3>Pasti registrati</h3>
+                <div id="listaPasti">
+                    <p class="vuoto">Nessun pasto registrato per questo giorno.</p>
+                </div>
+            </section>
+
+            <!-- CALENDARIO -->
+            <section id="calendario" class="pagina">
+                <div class="cal-testa">
+                    <h1 id="meseAnnoCal">Mese Anno</h1>
+                    <div>
+                        <button onclick="cambiaMese(-1)">‹</button>
+                        <button onclick="cambiaMese(1)">›</button>
+                    </div>
+                </div>
+                <p class="sottotitolo">Seleziona una data per visualizzare o aggiungere dati</p>
+
+                <div class="card" style="padding:15px">
+                    <div class="cal-griglia cal-sett">
+                        <span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span>
+                    </div>
+                    <div class="cal-griglia" id="grigliaCalendario" style="margin-top:8px"></div>
+                </div>
+
+                <div id="dettaglioGiornoCal">
+                    <p class="vuoto">Seleziona un giorno dal calendario</p>
+                </div>
+            </section>
+
+            <!-- ALIMENTI -->
+            <section id="alimenti" class="pagina">
+                <h1>Alimenti</h1>
+                <p class="sottotitolo">Aggiungi e gestisci i tuoi ingredienti</p>
+
+                <div class="card form-card">
+                    <h3>Nuovo alimento</h3>
+
+                    <form id="formAlimento" onsubmit="salvaAlimento(event)">
+                        <label>Nome alimento</label>
+                        <input type="text" id="nomeAlimento" placeholder="Es. Mela, Petto di pollo..." required>
+
+                        <label>Valori per 100g / 100ml</label>
+                        <input type="number" id="kcal100" placeholder="Kcal" min="0" step="any" required>
+                        <input type="number" id="prot100" placeholder="Proteine (g)" min="0" step="any">
+                        <input type="number" id="carb100" placeholder="Carboidrati (g)" min="0" step="any">
+                        <input type="number" id="gras100" placeholder="Grassi (g)" min="0" step="any">
+
+                        <button type="submit">Salva Alimento</button>
+                    </form>
+                </div>
+
+                <h3>I tuoi alimenti personalizzati</h3>
+                <div id="listaAlimentiPersonalizzati">
+                    <p class="vuoto">Nessun alimento personalizzato inserito.</p>
+                </div>
+
+                <h3 style="margin-top:25px">Elementi recenti nel diario</h3>
+                <div id="listaElementiRecenti">
+                    <p class="vuoto">Nessun elemento recente.</p>
+                </div>
+            </section>
+
+            <!-- ALLENAMENTI -->
+            <section id="allenamenti" class="pagina">
+                <h1>Allenamenti</h1>
+                <p class="sottotitolo">Traccia le tue attività sportive</p>
+
+                <div class="card form-card">
+                    <h3>Registra Allenamento</h3>
+
+                    <form id="formAllenamento" onsubmit="salvaAllenamento(event)">
+                        <label>Tipo di attività</label>
+                        <input type="text" id="tipoAllenamento" placeholder="Es. Corsa, Palestra, Nuoto..." required>
+
+                        <label>Durata (minuti)</label>
+                        <input type="number" id="durataAllenamento" placeholder="Es. 45" min="1" required>
+
+                        <label>Calorie bruciate (kcal stimate)</label>
+                        <input type="number" id="kcalBruciate" placeholder="Es. 300" min="0">
+
+                        <label>Note / Esercizi</label>
+                        <textarea id="noteAllenamento" placeholder="Dettagli allenamento..."></textarea>
+
+                        <button type="submit">Salva Allenamento</button>
+                    </form>
+                </div>
+
+                <h3>Storico Allenamenti</h3>
+
+                <div id="listaAllenamenti">
+                    <p class="vuoto">Nessun allenamento registrato.</p>
+                </div>
+            </section>
+
+            <!-- PESO / SONNO (si apre dalla Home) -->
+            <section id="progressi" class="pagina">
+                <button class="btn-indietro" onclick="mostraPagina('home')">‹ Indietro</button>
+                <h1 id="titoloProgressi">Peso</h1>
+                <p class="sottotitolo" id="sottotitoloProgressi"></p>
+
+                <div id="sezPeso">
+                    <div class="card">
+                        <div class="card-testa">
+                            <h3>⚖️ Peso</h3>
+                            <div class="anno-nav">
+                                <button type="button" onclick="cambiaAnnoPeso(-1)" aria-label="Anno precedente">‹</button>
+                                <strong id="annoPeso">2026</strong>
+                                <button type="button" id="btnAnnoAvanti" onclick="cambiaAnnoPeso(1)" aria-label="Anno successivo">›</button>
+                            </div>
+                        </div>
+
+                        <div class="stat-riga" id="statPeso"></div>
+                        <div class="grafico-svg" id="graficoPeso"></div>
+                        <p class="grafico-nota" id="dettaglioPunto">Tocca un punto per vedere i dettagli</p>
+
+                        <form onsubmit="salvaPeso(event)">
+                            <div class="riga-2">
+                                <div>
+                                    <label for="pesoData">Data</label>
+                                    <input type="date" id="pesoData" required>
+                                </div>
+                                <div>
+                                    <label for="pesoKg">Peso (kg)</label>
+                                    <input type="number" id="pesoKg" min="30" max="300" step="0.1" placeholder="Es. 70.5" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primario">Aggiungi peso</button>
+                        </form>
+
+                        <div id="listaPesi"></div>
+                    </div>
+                </div>
+
+                <div id="sezSonno">
+                    <div class="card" id="cardSveglia">
+                        <div class="card-testa">
+                            <h3>⏰ Sveglia</h3>
+                            <label class="interruttore" aria-label="Attiva la sveglia">
+                                <input type="checkbox" id="svAttiva" onchange="salvaSveglia()">
+                                <span class="interruttore-pallino"></span>
+                            </label>
+                        </div>
+
+                        <div class="riga-2">
+                            <div>
+                                <label for="svLetto">Vado a letto</label>
+                                <input type="time" id="svLetto" onchange="salvaSveglia()">
+                            </div>
+                            <div>
+                                <label for="svOra">Sveglia alle</label>
+                                <input type="time" id="svOra" onchange="salvaSveglia()">
+                            </div>
+                        </div>
+
+                        <div class="sv-riepilogo" id="svRiepilogo"></div>
+                        <div id="svSessione"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-testa">
+                            <h3>😴 Sonno</h3>
+                            <small>Ultimi 7 giorni</small>
+                        </div>
+
+                        <div class="stat-riga" id="statSonno"></div>
+                        <div class="grafico-svg" id="graficoSonno"></div>
+                        <p class="grafico-nota">Tocca una barra per modificare quella notte</p>
+
+                        <form onsubmit="salvaSonno(event)">
+                            <div class="riga-2">
+                                <div>
+                                    <label for="sonnoData">Data</label>
+                                    <input type="date" id="sonnoData" required>
+                                </div>
+                                <div>
+                                    <label for="sonnoOre">Ore di sonno</label>
+                                    <input type="number" id="sonnoOre" min="0.25" max="24" step="any" placeholder="Es. 7.5" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primario">Salva sonno</button>
+                        </form>
+
+                        <div id="listaSonno"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- MENU INFERIORE -->
+        <nav class="menu">
+            <button class="menu-item attivo" onclick="mostraPagina('home', this)">
+                <span>🏠</span>
+                <small>Home</small>
+            </button>
+
+            <button class="menu-item" onclick="mostraPagina('cronologia', this)">
+                <span>📖</span>
+                <small>Diario</small>
+            </button>
+
+            <button class="menu-item" onclick="mostraPagina('calendario', this)">
+                <span>📅</span>
+                <small>Calendario</small>
+            </button>
+
+            <button class="menu-item" onclick="mostraPagina('alimenti', this)">
+                <span>🍎</span>
+                <small>Alimenti</small>
+            </button>
+
+            <button class="menu-item" onclick="mostraPagina('allenamenti', this)">
+                <span>🏋️</span>
+                <small>Sport</small>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- MODALE MODIFICA PASTO -->
+    <div id="modaleModificaPasto" class="modale" style="display:none">
+        <div class="modale-box">
+            <h3>Modifica Pasto</h3>
+            <label>Tipo Pasto</label>
+            <select id="modTipoPasto">
+                <option value="Colazione">Colazione</option>
+                <option value="Pranzo">Pranzo</option>
+                <option value="Cena">Cena</option>
+                <option value="Spuntino">Spuntino</option>
+            </select>
+            <label>Quantità (g / ml)</label>
+            <input type="number" id="modQuantitaPasto" min="1" oninput="calcolaModKcal()">
+            <p id="modKcalTesto" style="margin-top:10px;font-weight:bold;color:var(--primario);font-size:14px"></p>
+            <div class="modale-btn">
+                <button onclick="chiudiModalePasto()">Annulla</button>
+                <button id="modOk" onclick="confermaModificaPasto()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE MODIFICA ALIMENTO PERSONALIZZATO -->
+    <div id="modaleModificaAlimento" class="modale" style="display:none">
+        <div class="modale-box">
+            <h3>Modifica Alimento</h3>
+            <label>Nome alimento</label>
+            <input type="text" id="modNomeAlimento" required>
+            <label>Kcal per 100g/ml</label>
+            <input type="number" id="modKcal100" min="0" step="any" required>
+            <label>Proteine (g)</label>
+            <input type="number" id="modProt100" min="0" step="any">
+            <label>Carboidrati (g)</label>
+            <input type="number" id="modCarb100" min="0" step="any">
+            <label>Grassi (g)</label>
+            <input type="number" id="modGras100" min="0" step="any">
+            <div class="modale-btn">
+                <button onclick="chiudiModaleAlimento()">Annulla</button>
+                <button id="modOkAlimento" onclick="confermaModificaAlimento()">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHERMATA LOGIN / REGISTRAZIONE -->
+    <div id="schermataAuth" class="auth">
+        <div class="auth-box">
+            <img class="logo-img logo-auth" data-logo="completo" src="img/logo-completo-foresta.png" alt="NutriTrack">
+            <p class="sottotitolo">Accedi o crea un account per iniziare</p>
+
+            <div class="auth-tabs">
+                <button type="button" id="tabLogin" class="attivo" onclick="mostraTabAuth('login')">Accedi</button>
+                <button type="button" id="tabRegistrati" onclick="mostraTabAuth('registrati')">Registrati</button>
+            </div>
+
+            <form id="formLogin" onsubmit="eseguiLogin(event)">
+                <label for="loginUsername">Nome utente</label>
+                <input type="text" id="loginUsername" autocomplete="username" required>
+
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" autocomplete="current-password" required>
+
+                <p class="errore" id="erroreLogin"></p>
+                <button type="submit" class="btn-primario">Accedi</button>
+            </form>
+
+            <form id="formRegistrazione" style="display:none" onsubmit="eseguiRegistrazione(event)">
+                <label for="regUsername">Nome utente</label>
+                <input type="text" id="regUsername" placeholder="3-20 caratteri: lettere, numeri, _ . -" maxlength="20" autocomplete="username" required>
+
+                <label for="regPassword">Password</label>
+                <input type="password" id="regPassword" oninput="aggiornaRequisitiPassword()" autocomplete="new-password" required>
+                <ul class="requisiti" id="requisitiPassword">
+                    <li data-req="len">Almeno 8 caratteri</li>
+                    <li data-req="upper">Almeno una lettera maiuscola</li>
+                    <li data-req="num">Almeno un numero</li>
+                </ul>
+
+                <label for="regPassword2">Ripeti password</label>
+                <input type="password" id="regPassword2" autocomplete="new-password" required>
+
+                <p class="errore" id="erroreRegistrazione"></p>
+                <button type="submit" class="btn-primario">Crea account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE DATI PERSONALI -->
+    <div id="modaleDatiPersonali" class="modale" style="display:none">
+        <div class="modale-box">
+            <img class="logo-img logo-modale" id="dpLogo" data-logo="icona" src="img/logo-icona-foresta.png" alt="" hidden>
+            <h3 id="dpTitolo">Dati personali</h3>
+            <p id="dpIntro" class="dp-intro"></p>
+            <form id="formDatiPersonali" onsubmit="salvaDatiPersonali(event)" oninput="aggiornaAnteprimaKcal()" onchange="aggiornaAnteprimaKcal()">
+                <label for="dpNome">Nome</label>
+                <input type="text" id="dpNome" maxlength="30" autocomplete="given-name" required>
+
+                <label for="dpSesso">Sesso</label>
+                <select id="dpSesso">
+                    <option value="M">Uomo</option>
+                    <option value="F">Donna</option>
+                </select>
+
+                <label for="dpEta">Età (anni)</label>
+                <input type="number" id="dpEta" min="14" max="100" step="1" placeholder="Es. 25" required>
+
+                <label for="dpPeso">Peso (kg)</label>
+                <input type="number" id="dpPeso" min="30" max="300" step="any" placeholder="Es. 70" required>
+
+                <label for="dpAltezza">Altezza (cm)</label>
+                <input type="number" id="dpAltezza" min="120" max="230" step="any" placeholder="Es. 175" required>
+
+                <div class="anteprima-kcal">
+                    <small>Kcal giornaliere (più quelle degli allenamenti)</small>
+                    <strong id="dpAnteprima">—</strong>
+                </div>
+
+                <p class="errore" id="dpErrore"></p>
+
+                <div class="modale-btn">
+                    <button type="button" id="btnAnnullaDati" onclick="annullaDatiPersonali()">Annulla</button>
+                    <button type="submit" id="btnSalvaDati">Salva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODALE MISSIONI -->
+    <div id="modaleMissioni" class="modale" style="display:none">
+        <div class="modale-box">
+            <h3>🎯 Missioni di oggi</h3>
+            <p class="dp-intro">Completa le missioni per guadagnare punti. Si azzerano ogni giorno.</p>
+            <div id="listaMissioni"></div>
+            <div class="missioni-totale">
+                <span>Punti guadagnati oggi</span>
+                <strong id="puntiOggi">0</strong>
+            </div>
+            <div class="modale-btn">
+                <button type="button" id="btnChiudiMissioni" onclick="chiudiMissioni()">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SVEGLIA CHE SUONA -->
+    <div id="overlaySveglia" class="overlay-sveglia" style="display:none">
+        <div class="overlay-sveglia-box">
+            <div class="os-sole">⏰</div>
+            <div class="os-ora" id="osOra">07:00</div>
+            <p id="osTesto">Buongiorno!</p>
+            <button type="button" class="btn-primario" onclick="spegniSveglia()">Spegni e salva il sonno</button>
+            <button type="button" class="btn-secondario" onclick="posticipaSveglia()">Posticipa di 5 minuti</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
